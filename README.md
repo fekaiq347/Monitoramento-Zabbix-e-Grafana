@@ -16,7 +16,8 @@ meu-projeto-zabbix-grafana/
 │   ├── zabbix_server.conf             # Configuração do servidor Zabbix
 │   └── zabbix_agentd.conf             # Configuração do agente Zabbix (se aplicável)
 ├── scripts/
-│   └── instalar_zabbix.sh             # Script de instalação automatizada (se presente)
+│   ├── instalar_zabbix.sh             # Script de instalação automatizada (se presente)
+│   └── create_zabbix_db.sql           # Script SQL para criar o banco de dados do Zabbix
 ├── README.md                          # Documentação do projeto
 └── .gitignore                         # Padrões de arquivos ignorados pelo Git
 ```
@@ -66,14 +67,60 @@ Copie os arquivos de configuração da pasta `zabbix/` para os diretórios corre
 
 ---
 
+## Configuração do Banco de Dados (MariaDB)
+
+Este projeto utiliza o MariaDB como backend para o Zabbix. Para configurar o banco, execute os seguintes passos:
+
+### 1. Instale o MariaDB
+
+```bash
+sudo apt install -y mariadb-server
+sudo systemctl start mariadb
+sudo systemctl enable mariadb
+```
+
+### 2. Proteja a Instalação
+
+```bash
+sudo mysql_secure_installation
+```
+
+### 3. Crie o Banco de Dados e o Usuário
+
+Você pode executar os comandos manualmente ou usar o script `create_zabbix_db.sql` disponível na pasta `scripts/`.
+
+#### Opção 1 – Manualmente no terminal SQL:
+
+```sql
+CREATE DATABASE zabbix CHARACTER SET utf8mb4 COLLATE utf8mb4_bin;
+CREATE USER 'zabbixuser'@'localhost' IDENTIFIED BY 'SUA_SENHA_AQUI';
+GRANT ALL PRIVILEGES ON zabbix.* TO 'zabbixuser'@'localhost';
+FLUSH PRIVILEGES;
+```
+
+#### Opção 2 – Usando o script SQL:
+
+```bash
+sudo mysql -u root -p < scripts/create_zabbix_db.sql
+```
+
+> **Atenção:** Substitua `SUA_SENHA_AQUI` por uma senha segura antes de executar o script.
+
+---
+
+## Boas Práticas
+
+- **Sensibilidade de Dados:**  
+  Jamais inclua senhas reais em repositórios públicos. Use placeholders como `SUA_SENHA_AQUI` e oriente os usuários a substituí-los adequadamente.
+
+- **Referências Oficiais:**  
+  - [Documentação do MariaDB](https://mariadb.com/kb/en/)
+  - [Documentação do Zabbix](https://www.zabbix.com/documentation/current/manual)
+
+---
+
 ## Pré-requisitos
 
 - Zabbix Server e Agent instalados e funcionando.
 - Grafana com o **plugin do Zabbix** configurado.
 - Host com os itens necessários configurados para coleta de dados.
-
----
-
-## Observações
-
-- O dashboard está configurado para métricas comuns, mas pode ser adaptado conforme o template do host ou nome dos itens utilizados no seu ambiente Zabbix.
